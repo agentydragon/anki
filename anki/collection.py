@@ -640,20 +640,22 @@ where c.nid = n.id and c.id in %s group by nid"""
         else:
             template = model["tmpls"][0]
         fields["Card"] = template["name"]
-        fields["c%d" % (data[4] + 1)] = "1"
+        ord = data[4] + 1
+        fields["c{}".format(ord)] = "1"
         # render q & a
         d: Dict[str, Any] = dict(id=data[0])
         qfmt = qfmt or template["qfmt"]
         afmt = afmt or template["afmt"]
         for (type, format) in (("q", qfmt), ("a", afmt)):
-            if type == "q":
-                format = re.sub(
-                    "{{(?!type:)(.*?)cloze:", r"{{\1cq-%d:" % (data[4] + 1), format
-                )
-                format = format.replace("<%cloze:", "<%%cq:%d:" % (data[4] + 1))
-            else:
-                format = re.sub("{{(.*?)cloze:", r"{{\1ca-%d:" % (data[4] + 1), format)
-                format = format.replace("<%cloze:", "<%%ca:%d:" % (data[4] + 1))
+            format = re.sub(
+                "{{(?!type:)(.*?)cloze:",
+                r"{{\1c{type}-{ord}:".format(type=type, ord=ord),
+                format,
+            )
+            format = format.replace(
+                "<%cloze:", "<%c{type}:{ord}:".format(type=type, ord=ord)
+            )
+            if type == "a":
                 fields["FrontSide"] = stripSounds(d["q"])
             fields = runFilter("mungeFields", fields, model, data, self)
             html = anki.template.render(format, fields)
