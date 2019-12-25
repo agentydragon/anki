@@ -440,18 +440,19 @@ crt=?, mod=?, scm=?, dty=?, usn=?, ls=?, conf=?""",
             # add any missing cards
             for t in self._tmplsFromOrds(model, avail):
                 doHave = nid in have and t["ord"] in have[nid]
-                if not doHave:
-                    # check deck is not a cram deck
-                    did = t["did"] or did
-                    if self.decks.isDyn(did):
-                        did = 1
-                    # if the deck doesn't exist, use default instead
-                    did = self.decks.get(did)["id"]
-                    # use sibling due# if there is one, else use a new id
-                    if due is None:
-                        due = self.nextID("pos")
-                    data.append((ts, nid, did, t["ord"], now, usn, due))
-                    ts += 1
+                if doHave:
+                    continue
+                # check deck is not a filtered deck
+                did = t["did"] or did
+                if self.decks.isDyn(did):
+                    did = 1
+                # if the deck doesn't exist, use default instead
+                did = self.decks.get(did)["id"]
+                # use sibling due# if there is one, else use a new id
+                if due is None:
+                    due = self.nextID("pos")
+                data.append((ts, nid, did, t["ord"], now, usn, due))
+                ts += 1
             # note any cards that need removing
             if nid in have:
                 for ord, id in list(have[nid].items()):
