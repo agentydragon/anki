@@ -113,7 +113,7 @@ class _Collection:
             self.conf["newBury"] = True
             self.setMod()
 
-    def name(self) -> Any:
+    def name(self) -> str:
         n = os.path.splitext(os.path.basename(self.path))[0]
         return n
 
