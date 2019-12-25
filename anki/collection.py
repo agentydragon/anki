@@ -454,10 +454,8 @@ crt=?, mod=?, scm=?, dty=?, usn=?, ls=?, conf=?""",
                 data.append((ts, nid, did, t["ord"], now, usn, due))
                 ts += 1
             # note any cards that need removing
-            if nid in have:
-                for ord, id in list(have[nid].items()):
-                    if ord not in avail:
-                        rem.append(id)
+            if nid in have and set(avail) - set(have[nid].keys()):
+                rem.append(id)
         # bulk update
         self.db.executemany(
             """
