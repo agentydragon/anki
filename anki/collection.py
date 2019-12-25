@@ -404,9 +404,7 @@ crt=?, mod=?, scm=?, dty=?, usn=?, ls=?, conf=?""",
             + snids
         ):
             # existing cards
-            if nid not in have:
-                have[nid] = {}
-            have[nid][ord] = id
+            have.setdefault(nid, {})[ord] = id
             # if in a filtered deck, add new cards to original deck
             if odid != 0:
                 did = odid
