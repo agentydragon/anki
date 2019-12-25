@@ -624,11 +624,11 @@ where c.nid = n.id and c.id in %s group by nid"""
         # data is [cid, nid, mid, did, ord, tags, flds, cardFlags]
         # unpack fields and create dict
         flist = splitFields(data[6])
-        fields = {}
         model = self.models.get(data[2])
         assert model
-        for (name, (idx, conf)) in list(self.models.fieldMap(model).items()):
-            fields[name] = flist[idx]
+        fields = {
+            name: flist[idx] for (name, (idx, _)) in self.models.fieldMap(model).items()
+        }
         fields["Tags"] = data[5].strip()
         fields["Type"] = model["name"]
         fields["Deck"] = self.decks.name(data[3])
