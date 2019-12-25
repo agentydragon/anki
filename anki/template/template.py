@@ -1,3 +1,4 @@
+import logging
 import re
 from typing import Any, Callable, Dict, Pattern
 
@@ -131,6 +132,7 @@ class Template:
                 replacement = func(self, tag_name, context)
                 template = template.replace(tag, replacement)
             except (SyntaxError, KeyError):
+                logging.exception("Invalid template")
                 return "{{invalid template}}"
 
         return template
