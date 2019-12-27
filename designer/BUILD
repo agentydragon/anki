@@ -1,3 +1,6 @@
 package(default_visibility = ["//visibility:public"])
-exports_files(glob(["*.ui"]))
+
+ALL_UIS = glob(["*.ui"])
+
+exports_files(ALL_UIS)
 # TODO

@@ -1,3 +1,4 @@
+/bazel*
 *.mo
 *.pyc
 *\#
@@ -11,7 +12,6 @@
 __pycache__
 anki/buildhash.py
 anki/backend_pb2.*
-aqt/forms
 locale
 rs/ankirs/src/backend_proto.rs
 rs/target

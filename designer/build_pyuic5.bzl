@@ -9,3 +9,7 @@ def build_pyuic5(name, src, out):
 	        echo "from anki.lang import _";
 		pyuic5 --from-imports $(location """ + src + """) | tail -n +3) | perl -p -e 's/(QtGui\.QApplication\.)?_?translate\(".*?", /_(/; s/, None.*/))/' > "$@" """,
     )
+
+def build_all_pyuic5(uis):
+    for ui in uis:
+        print(ui)
