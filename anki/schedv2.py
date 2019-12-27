@@ -28,6 +28,7 @@ QUEUE_TYPE_DAY_LEARN_RELEARN = 3
 QUEUE_TYPE_SIBLING_BURIED = -2
 QUEUE_TYPE_MANUALLY_BURIED = -3
 # revlog types: 0=lrn, 1=rev, 2=relrn, 3=early review
+REVLOG_TYPE_EARLY_REVIEW = 3
 # positive revlog intervals are in days (rev), negative in seconds (lrn)
 # odue/odid store original due/did when cards moved to filtered deck
 
@@ -952,7 +953,7 @@ select id from cards where did in %s and queue = 2 and due <= ? limit ?)"""
     def _answerRevCard(self, card: Card, ease: int) -> None:
         delay = 0
         early = card.odid and (card.odue > self.today)
-        type = early and 3 or 1
+        type = early and REVLOG_TYPE_EARLY_REVIEW or 1
 
         if ease == 1:
             delay = self._rescheduleLapse(card)
