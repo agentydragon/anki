@@ -91,10 +91,9 @@ defaultConf = {
     "usn": 0,
 }
 
-
 class DeckManager:
-    decks: Dict[str, Any]
-    dconf: Dict[str, Any]
+    decks: Dict[str, Deck]
+    dconf: Dict[str, DeckConfig]
 
     # Registry save/load
     #############################################################
@@ -119,7 +118,7 @@ class DeckManager:
         if not found:
             self.changed = False
 
-    def save(self, g: Optional[Any] = None) -> None:
+    def save(self, g: Optional[Union[Deck, DeckConfig]] = None) -> None:
         "Can be called with either a deck or a deck configuration."
         if g:
             g["mod"] = intTime()
@@ -139,7 +138,7 @@ class DeckManager:
     #############################################################
 
     def id(
-        self, name: str, create: bool = True, type: Optional[Dict[str, Any]] = None
+        self, name: str, create: bool = True, type: Optional[Deck] = None
     ) -> Optional[int]:
         "Add a deck with NAME. Reuse deck if already exists. Return id as int."
         if type is None:
@@ -255,27 +254,29 @@ class DeckManager:
     def count(self) -> int:
         return len(self.decks)
 
-    def get(self, did: Union[int, str], default: bool = True) -> Any:
+    def get(self, did: Union[int, str], default: bool = True) -> Optional[Deck]:
         id = str(did)
         if id in self.decks:
             return self.decks[id]
         elif default:
             return self.decks["1"]
+        return None
 
-    def byName(self, name: str) -> Any:
+    def byName(self, name: str) -> Optional[Deck]:
         """Get deck with NAME, ignoring case."""
         for m in list(self.decks.values()):
             if self.equalName(m["name"], name):
                 return m
+        return None
 
-    def update(self, g: Dict[str, Any]) -> None:
+    def update(self, g: Deck) -> None:
         "Add or update an existing deck. Used for syncing and merging."
         self.decks[str(g["id"])] = g
         self.maybeAddToActive()
         # mark registry changed, but don't bump mod time
         self.save()
 
-    def rename(self, g: Dict[str, Any], newName: str) -> None:
+    def rename(self, g: Deck, newName: str) -> None:
         "Rename deck prefix to NAME if not exists. Updates children."
         # make sure target node doesn't already exist
         if self.byName(newName):
@@ -299,7 +300,7 @@ class DeckManager:
         # renaming may have altered active did order
         self.maybeAddToActive()
 
-    def renameForDragAndDrop(self, draggedDeckDid: int, ontoDeckDid: Any) -> None:
+    def renameForDragAndDrop(self, draggedDeckDid: int, ontoDeckDid: Optional[str]) -> None:
         draggedDeck = self.get(draggedDeckDid)
         draggedDeckName = draggedDeck["name"]
         ontoDeckName = self.get(ontoDeckDid)["name"]
@@ -326,23 +327,23 @@ class DeckManager:
         else:
             return True
 
-    def _isParent(self, parentDeckName: str, childDeckName: str) -> Any:
+    def _isParent(self, parentDeckName: str, childDeckName: str) -> bool:
         return self._path(childDeckName) == self._path(parentDeckName) + [
             self._basename(childDeckName)
         ]
 
-    def _isAncestor(self, ancestorDeckName: str, descendantDeckName: str) -> Any:
+    def _isAncestor(self, ancestorDeckName: str, descendantDeckName: str) -> bool:
         ancestorPath = self._path(ancestorDeckName)
         return ancestorPath == self._path(descendantDeckName)[0 : len(ancestorPath)]
 
-    def _path(self, name: str) -> Any:
+    def _path(self, name: str) -> List[str]:
         return name.split("::")
 
-    def _basename(self, name: str) -> Any:
+    def _basename(self, name: str) -> str:
         return self._path(name)[-1]
 
-    def _ensureParents(self, name: str) -> Any:
-        "Ensure parents exist, and return name with case matching parents."
+    def _ensureParents(self, name: str) -> str:
+        """Ensure parents exist, and return name with case matching parents."""
         s = ""
         path = self._path(name)
         if len(path) < 2:
@@ -366,7 +367,7 @@ class DeckManager:
         "A list of all deck config."
         return list(self.dconf.values())
 
-    def confForDid(self, did: int) -> Any:
+    def confForDid(self, did: int) -> DeckConfig:
         deck = self.get(did, default=False)
         assert deck
         if "conf" in deck:
@@ -376,15 +377,15 @@ class DeckManager:
         # dynamic decks have embedded conf
         return deck
 
-    def getConf(self, confId: int) -> Any:
+    def getConf(self, confId: int) -> DeckConfig:
         return self.dconf[str(confId)]
 
-    def updateConf(self, g: Dict[str, Any]) -> None:
+    def updateConf(self, g: DeckConfig) -> None:
         self.dconf[str(g["id"])] = g
         self.save()
 
-    def confId(self, name: str, cloneFrom: Optional[Dict[str, Any]] = None) -> int:
-        "Create a new configuration and return id."
+    def confId(self, name: str, cloneFrom: Optional[DeckConfig] = None) -> int:
+        """Create a new configuration and return id."""
         if cloneFrom is None:
             cloneFrom = defaultConf
         c = copy.deepcopy(cloneFrom)
@@ -411,7 +412,7 @@ class DeckManager:
                 g["conf"] = 1
                 self.save(g)
 
-    def setConf(self, grp: Dict[str, Any], id: int) -> None:
+    def setConf(self, grp: DeckConfig, id: int) -> None:
         grp["conf"] = id
         self.save(grp)
 
@@ -436,13 +437,13 @@ class DeckManager:
     # Deck utils
     #############################################################
 
-    def name(self, did: int, default: bool = False) -> Any:
+    def name(self, did: int, default: bool = False) -> str:
         deck = self.get(did, default=default)
         if deck:
             return deck["name"]
         return _("[no deck]")
 
-    def nameOrNone(self, did) -> Any:
+    def nameOrNone(self, did) -> Optional[str]:
         deck = self.get(did, default=False)
         if deck:
             return deck["name"]
@@ -512,15 +513,15 @@ class DeckManager:
     # Deck selection
     #############################################################
 
-    def active(self) -> Any:
+    def active(self) -> List[int]:
         "The currrently active dids. Make sure to copy before modifying."
         return self.col.conf["activeDecks"]
 
-    def selected(self) -> Any:
+    def selected(self) -> int:
         "The currently selected did."
         return self.col.conf["curDeck"]
 
-    def current(self) -> Any:
+    def current(self) -> Deck:
         return self.get(self.selected())
 
     def select(self, did: int) -> None:

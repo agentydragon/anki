@@ -12,6 +12,24 @@ Field = Dict[str, Any]
 
 Template = Dict[str, Union[str, int, None]]
 
+# Deck.
+# Keys:
+#    newToday: List[int] (currentDay, count)
+#    revToday: List[int] (currentDay, count)
+#    lrnToday: List[int] (currentDay, count)
+#    timeToday: List[int]
+#    conf: int
+#    usn: int
+#    desc: str
+#    dyn: Union[int, bool]
+#    collapsed: bool
+#    extendNew: int
+#    extendRev: int
+Deck = Dict[str, Any]
+
+# Deck configuration.
+DeckConfig = Dict[str, Any]
+
 QAData = Tuple[
     # Card ID this QA comes from. Corresponds to 'cid' column.
     int,
