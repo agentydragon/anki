@@ -46,23 +46,50 @@ from anki.utils import (
     stripHTMLMedia,
 )
 
+# Keys for _Collection.conf.
+
+# List of IDs of currently active decks.
+COLLECTION_CONF_ACTIVE_DECKS = "activeDecks"
+# ID of the currently selected deck.
+COLLECTION_CONF_CURRENT_DECK = "curDeck"
+
+
+COLLECTION_CONF_SAVED_FILTERS = "savedFilters"
+COLLECTION_CONF_PREVIEW_BOTH_SIDES = "savedFilters"
+COLLECTION_CONF_ACTIVE_COLS = "activeCols"
+COLLECTION_CONF_SORT_BACKWARDS = "sortBackwards"
+COLLECTION_CONF_SORT_TYPE = "sortType"
+COLLECTION_CONF_CURRENT_MODEL = "curModel"
+COLLECTION_CONF_NEW_BURY = "newBury"
+COLLECTION_CONF_SCHEDULER_VERSION = "schedVer"
+COLLECTION_CONF_LOCAL_OFFSET = "localOffset"
+COLLECTION_CONF_TIME_LIMIT = "timeLim"
+COLLECTION_CONF_NEXT_CARD_POSITION = "nextPos"
+# bool, whether to add new to currently selected deck.
+COLLECTION_CONF_ADD_TO_CUR = "addToCur"
+COLLECTION_DAY_LEARN_FIRST = "dayLearnFirst"
+COLLECTION_CONF_DUE_COUNTS = "dayLearnFirst"
+COLLECTION_CONF_EST_TIMES = "estTimes"
+COLLECTION_CONF_NEW_SPREAD = "newSpread"
+COLLECTION_CONF_COLLAPSE_TIME = "collapseTime"
+
 defaultConf = {
     # review options
-    "activeDecks": [1],
-    "curDeck": 1,
-    "newSpread": NEW_CARDS_DISTRIBUTE,
-    "collapseTime": 1200,
-    "timeLim": 0,
-    "estTimes": True,
-    "dueCounts": True,
+    COLLECTION_CONF_ACTIVE_DECKS: [1],
+    COLLECTION_CONF_CURRENT_DECK: 1,
+    COLLECTION_CONF_NEW_SPREAD: NEW_CARDS_DISTRIBUTE,
+    COLLECTION_CONF_COLLAPSE_TIME: 1200,
+    COLLECTION_CONF_TIME_LIMIT: 0,
+    COLLECTION_CONF_EST_TIMES: True,
+    COLLECTION_CONF_DUE_COUNTS: True,
     # other config
-    "curModel": None,
-    "nextPos": 1,
-    "sortType": "noteFld",
-    "sortBackwards": False,
-    "addToCur": True,  # add new to currently selected deck?
-    "dayLearnFirst": False,
-    "schedVer": 1,
+    COLLECTION_CONF_CURRENT_MODEL: None,
+    COLLECTION_CONF_NEXT_CARD_POSITION: 1,
+    COLLECTION_CONF_SORT_TYPE: "noteFld",
+    COLLECTION_CONF_SORT_BACKWARDS: False,
+    COLLECTION_CONF_ADD_TO_CUR: True,
+    COLLECTION_DAY_LEARN_FIRST: False,
+    COLLECTION_CONF_SCHEDULER_VERSION: 1,
 }
 
 
@@ -108,8 +135,8 @@ class _Collection:
             d += datetime.timedelta(hours=4)
             self.crt = int(time.mktime(d.timetuple()))
         self._loadScheduler()
-        if not self.conf.get("newBury", False):
-            self.conf["newBury"] = True
+        if not self.conf.get(COLLECTION_CONF_NEW_BURY, False):
+            self.conf[COLLECTION_CONF_NEW_BURY] = True
             self.setMod()
 
     def name(self) -> Any:
@@ -122,7 +149,7 @@ class _Collection:
     supportedSchedulerVersions = (1, 2)
 
     def schedVer(self) -> Any:
-        ver = self.conf.get("schedVer", 1)
+        ver = self.conf.get(COLLECTION_CONF_SCHEDULER_VERSION, 1)
         if ver in self.supportedSchedulerVersions:
             return ver
         else:
@@ -135,9 +162,9 @@ class _Collection:
         elif ver == 2:
             self.sched = V2Scheduler(self)
             if not self.server:
-                self.conf["localOffset"] = self.sched.timezoneOffset()
+                self.conf[COLLECTION_CONF_LOCAL_OFFSET] = self.sched.timezoneOffset()
             elif self.server.minutes_west is not None:
-                self.conf["localOffset"] = self.server.minutes_west
+                self.conf[COLLECTION_CONF_LOCAL_OFFSET] = self.server.minutes_west
 
     def changeSchedulerVer(self, ver: int) -> None:
         if ver == self.schedVer():
@@ -155,7 +182,7 @@ class _Collection:
         else:
             v2Sched.moveToV2()
 
-        self.conf["schedVer"] = ver
+        self.conf[COLLECTION_CONF_SCHEDULER_VERSION] = ver
         self.setMod()
 
         self._loadScheduler()
@@ -741,12 +768,12 @@ where c.nid == f.id
 
     def timeboxReached(self) -> Union[bool, Tuple[Any, int]]:
         "Return (elapsedTime, reps) if timebox reached, or False."
-        if not self.conf["timeLim"]:
+        if not self.conf[COLLECTION_CONF_TIME_LIMIT]:
             # timeboxing disabled
             return False
         elapsed = time.time() - self._startTime
-        if elapsed > self.conf["timeLim"]:
-            return (self.conf["timeLim"], self.sched.reps - self._startReps)
+        if elapsed > self.conf[COLLECTION_CONF_TIME_LIMIT]:
+            return (self.conf[COLLECTION_CONF_TIME_LIMIT], self.sched.reps - self._startReps)
         return False
 
     # Undo
@@ -1014,7 +1041,7 @@ and type=0""",
                 % curs.rowcount
             )
         # new card position
-        self.conf["nextPos"] = (
+        self.conf[COLLECTION_CONF_NEXT_CARD_POSITION] = (
             self.db.scalar("select max(due)+1 from cards where type = 0") or 0
         )
         # reviews should have a reasonable due #

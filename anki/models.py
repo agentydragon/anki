@@ -9,6 +9,9 @@ import time
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 import anki  # pylint: disable=unused-import
+from anki.collection import (
+    COLLECTION_CONF_CURRENT_MODEL
+)
 from anki.consts import *
 from anki.hooks import runHook
 from anki.lang import _
@@ -130,11 +133,11 @@ class ModelManager:
         "Get current model."
         m = self.get(self.col.decks.current().get("mid"))
         if not forDeck or not m:
-            m = self.get(self.col.conf["curModel"])
+            m = self.get(self.col.conf[COLLECTION_CONF_CURRENT_MODEL])
         return m or list(self.models.values())[0]
 
     def setCurrent(self, m: NoteType) -> None:
-        self.col.conf["curModel"] = m["id"]
+        self.col.conf[COLLECTION_CONF_CURRENT_MODEL] = m["id"]
         self.col.setMod()
 
     def get(self, id: Any) -> Any:

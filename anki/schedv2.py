@@ -14,6 +14,11 @@ from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Union
 
 import anki  # pylint: disable=unused-import
 from anki.backend import SchedTimingToday
+from anki.collection import (
+    COLLECTION_CONF_NEW_SPREAD,
+    COLLECTION_CONF_COLLAPSE_TIME,
+    COLLECTION_DAY_LEARN_FIRST
+)
 from anki.cards import Card
 from anki.consts import *
 from anki.hooks import runHook
@@ -331,7 +336,7 @@ order by due"""
                 return c
 
         # day learning first and card due?
-        dayLearnFirst = self.col.conf.get("dayLearnFirst", False)
+        dayLearnFirst = self.col.conf.get(COLLECTION_DAY_LEARN_FIRST, False)
         if dayLearnFirst:
             c = self._getLrnDayCard()
             if c:
@@ -409,7 +414,7 @@ did = ? and queue = 0 limit ?)""",
             return self.col.getCard(self._newQueue.pop())
 
     def _updateNewCardRatio(self) -> None:
-        if self.col.conf["newSpread"] == NEW_CARDS_DISTRIBUTE:
+        if self.col.conf[COLLECTION_CONF_NEW_SPREAD] == NEW_CARDS_DISTRIBUTE:
             if self.newCount:
                 self.newCardModulus = (self.newCount + self.revCount) // self.newCount
                 # if there are cards to review, ensure modulo >= 2
@@ -422,9 +427,9 @@ did = ? and queue = 0 limit ?)""",
         "True if it's time to display a new card when distributing."
         if not self.newCount:
             return False
-        if self.col.conf["newSpread"] == NEW_CARDS_LAST:
+        if self.col.conf[COLLECTION_CONF_NEW_SPREAD] == NEW_CARDS_LAST:
             return False
-        elif self.col.conf["newSpread"] == NEW_CARDS_FIRST:
+        elif self.col.conf[COLLECTION_CONF_NEW_SPREAD] == NEW_CARDS_FIRST:
             return True
         elif self.newCardModulus:
             return self.reps and self.reps % self.newCardModulus == 0
@@ -482,7 +487,7 @@ select id from cards where did in %s and queue = 0 limit ?)"""
 
     # scan for any newly due learning cards every minute
     def _updateLrnCutoff(self, force: bool) -> bool:
-        nextCutoff = intTime() + self.col.conf["collapseTime"]
+        nextCutoff = intTime() + self.col.conf[COLLECTION_CONF_COLLAPSE_TIME]
         if nextCutoff - self._lrnCutoff > 60 or force:
             self._lrnCutoff = nextCutoff
             return True
@@ -533,7 +538,7 @@ select count() from cards where did in %s and queue = 4
             return False
         if self._lrnQueue:
             return True
-        cutoff = intTime() + self.col.conf["collapseTime"]
+        cutoff = intTime() + self.col.conf[COLLECTION_CONF_COLLAPSE_TIME]
         self._lrnQueue = self.col.db.all(
             """
 select due, id from cards where
@@ -551,7 +556,7 @@ limit %d"""
         if self._fillLrn():
             cutoff = time.time()
             if collapse:
-                cutoff += self.col.conf["collapseTime"]
+                cutoff += self.col.conf[COLLECTION_CONF_COLLAPSE_TIME]
             if self._lrnQueue[0][0] < cutoff:
                 id = heappop(self._lrnQueue)[1]
                 card = self.col.getCard(id)
@@ -664,7 +669,7 @@ did = ? and queue = 3 and due <= ? limit ?""",
             fuzz = random.randrange(0, maxExtra)
             card.due = min(self.dayCutoff - 1, card.due + fuzz)
             card.queue = 1
-            if card.due < (intTime() + self.col.conf["collapseTime"]):
+            if card.due < (intTime() + self.col.conf[COLLECTION_CONF_COLLAPSE_TIME]):
                 self.lrnCount += 1
                 # if the queue is not empty and there's nothing else to do, make
                 # sure we don't put it at the head of the queue and end up showing
@@ -818,7 +823,7 @@ did = ? and queue = 3 and due <= ? limit ?""",
 select count() from
 (select null from cards where did = ? and queue = 1 and due < ? limit ?)""",
                 did,
-                intTime() + self.col.conf["collapseTime"],
+                intTime() + self.col.conf[COLLECTION_CONF_COLLAPSE_TIME],
                 self.reportLimit,
             )
             or 0
@@ -1499,7 +1504,7 @@ To study outside of the normal schedule, click the Custom Study button below."""
         if not ivl:
             return _("(end)")
         s = fmtTimeSpan(ivl, short=short)
-        if ivl < self.col.conf["collapseTime"]:
+        if ivl < self.col.conf[COLLECTION_CONF_COLLAPSE_TIME]:
             s = "<" + s
         return s
 

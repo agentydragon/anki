@@ -181,7 +181,7 @@ where id > ?""",
         def indent():
             return "&nbsp;" * 6 * depth
 
-        if did == self.mw.col.conf["curDeck"]:
+        if did == self.mw.col.conf[COLLECTION_CONF_CURRENT_DECK]:
             klass = "deck current"
         else:
             klass = "deck"

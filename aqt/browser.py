@@ -13,7 +13,7 @@ from typing import Callable, List, Optional
 
 import anki
 import aqt.forms
-from anki.collection import _Collection
+from anki.collection import _Collection, COLLECTION_CONF_SAVED_FILTERS
 from anki.consts import *
 from anki.hooks import addHook, remHook, runFilter, runHook
 from anki.lang import _, ngettext
@@ -64,7 +64,8 @@ class DataModel(QAbstractTableModel):
         self.col = browser.col
         self.sortKey = None
         self.activeCols = self.col.conf.get(
-            "activeCols", ["noteFld", "template", "cardDue", "deck"]
+            COLLECTION_CONF_ACTIVE_COLS,
+            ["noteFld", "template", "cardDue", "deck"]
         )
         self.cards = []
         self.cardObjs = {}
@@ -683,7 +684,7 @@ class Browser(QMainWindow):
         saveGeom(self, "editor")
         saveState(self, "editor")
         saveHeader(self.form.tableView.horizontalHeader(), "editor")
-        self.col.conf["activeCols"] = self.model.activeCols
+        self.col.conf[COLLECTION_CONF_ACTIVE_COLS] = self.model.activeCols
         self.col.setMod()
         self.teardownHooks()
         self.mw.maybeReset()
@@ -914,28 +915,28 @@ by clicking on one on the left."""
                         "choose another."
                     )
                 )
-            type = self.col.conf["sortType"]
-        if self.col.conf["sortType"] != type:
-            self.col.conf["sortType"] = type
+            type = self.col.conf[COLLECTION_CONF_SORT_TYPE]
+        if self.col.conf[COLLECTION_CONF_SORT_TYPE] != type:
+            self.col.conf[COLLECTION_CONF_SORT_TYPE] = type
             # default to descending for non-text fields
             if type == "noteFld":
                 ord = not ord
-            self.col.conf["sortBackwards"] = ord
+            self.col.conf[COLLECTION_CONF_SORT_BACKWARDS] = ord
             self.search()
         else:
-            if self.col.conf["sortBackwards"] != ord:
-                self.col.conf["sortBackwards"] = ord
+            if self.col.conf[COLLECTION_CONF_SORT_BACKWARDS] != ord:
+                self.col.conf[COLLECTION_CONF_SORT_BACKWARDS] = ord
                 self.model.reverse()
         self.setSortIndicator()
 
     def setSortIndicator(self):
         hh = self.form.tableView.horizontalHeader()
-        type = self.col.conf["sortType"]
+        type = self.col.conf[COLLECTION_CONF_SORT_TYPE]
         if type not in self.model.activeCols:
             hh.setSortIndicatorShown(False)
             return
         idx = self.model.activeCols.index(type)
-        if self.col.conf["sortBackwards"]:
+        if self.col.conf[COLLECTION_CONF_SORT_BACKWARDS]:
             ord = Qt.DescendingOrder
         else:
             ord = Qt.AscendingOrder
@@ -1092,7 +1093,7 @@ by clicking on one on the left."""
 
     def _favTree(self, root) -> None:
         assert self.col
-        saved = self.col.conf.get("savedFilters", {})
+        saved = self.col.conf.get(COLLECTION_CONF_SAVED_FILTERS, {})
         for name, filt in sorted(saved.items()):
             item = SidebarItem(
                 name,
@@ -1312,14 +1313,14 @@ by clicking on one on the left."""
         m.addChild(noteTypes.chunked())
         return m
 
-    # Favourites
+    # Saved filters
     ######################################################################
 
     def _savedSearches(self):
         ml = MenuList()
         # make sure exists
-        if "savedFilters" not in self.col.conf:
-            self.col.conf["savedFilters"] = {}
+        if COLLECTION_CONF_SAVED_FILTERS not in self.col.conf:
+            self.col.conf[COLLECTION_CONF_SAVED_FILTERS] = {}
 
         ml.addSeparator()
 
@@ -1328,7 +1329,7 @@ by clicking on one on the left."""
         else:
             ml.addItem(_("Save Current Filter..."), self._onSaveFilter)
 
-        saved = self.col.conf["savedFilters"]
+        saved = self.col.conf[COLLECTION_CONF_SAVED_FILTERS]
         if not saved:
             return ml
 
@@ -1343,7 +1344,7 @@ by clicking on one on the left."""
         if not name:
             return
         filt = self.form.searchEdit.lineEdit().text()
-        self.col.conf["savedFilters"][name] = filt
+        self.col.conf[COLLECTION_CONF_SAVED_FILTERS][name] = filt
         self.col.setMod()
         self.maybeRefreshSidebar()
 
@@ -1351,14 +1352,14 @@ by clicking on one on the left."""
         name = self._currentFilterIsSaved()
         if not askUser(_("Remove %s from your saved searches?") % name):
             return
-        del self.col.conf["savedFilters"][name]
+        del self.col.conf[COLLECTION_CONF_SAVED_FILTERS][name]
         self.col.setMod()
         self.maybeRefreshSidebar()
 
     # returns name if found
     def _currentFilterIsSaved(self):
         filt = self.form.searchEdit.lineEdit().text()
-        for k, v in self.col.conf["savedFilters"].items():
+        for k, v in self.col.conf[COLLECTION_CONF_SAVED_FILTERS].items():
             if filt == v:
                 return k
         return None
@@ -1580,7 +1581,7 @@ where id in %s"""
         self.previewShowBothSides.setShortcut(QKeySequence("B"))
         self.previewShowBothSides.setToolTip(_("Shortcut key: %s" % "B"))
         bbox.addButton(self.previewShowBothSides, QDialogButtonBox.ActionRole)
-        self._previewBothSides = self.col.conf.get("previewBothSides", False)
+        self._previewBothSides = self.col.conf.get(COLLECTION_CONF_PREVIEW_BOTH_SIDES, False)
         self.previewShowBothSides.setChecked(self._previewBothSides)
         self.previewShowBothSides.toggled.connect(self._onPreviewShowBothSides)
 
@@ -1727,7 +1728,7 @@ where id in %s"""
 
     def _onPreviewShowBothSides(self, toggle):
         self._previewBothSides = toggle
-        self.col.conf["previewBothSides"] = toggle
+        self.col.conf[COLLECTION_CONF_PREVIEW_BOTH_SIDES] = toggle
         self.col.setMod()
         if self._previewState == "answer" and not toggle:
             self._previewState = "question"

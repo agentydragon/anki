@@ -34,9 +34,9 @@ class DeckChooser(QHBoxLayout):
         )
         self.addWidget(self.deck)
         # starting label
-        if self.mw.col.conf.get("addToCur", True):
+        if self.mw.col.conf.get(COLLECTION_CONF_ADD_TO_CUR, True):
             col = self.mw.col
-            did = col.conf["curDeck"]
+            did = col.conf[COLLECTION_CONF_CURRENT_DECK]
             if col.decks.isDyn(did):
                 # if they're reviewing, try default to current card
                 c = self.mw.reviewer.card
@@ -67,7 +67,7 @@ class DeckChooser(QHBoxLayout):
         remHook("currentModelChanged", self.onModelChange)
 
     def onModelChange(self):
-        if not self.mw.col.conf.get("addToCur", True):
+        if not self.mw.col.conf.get(COLLECTION_CONF_ADD_TO_CUR, True):
             self.setDeckName(
                 self.mw.col.decks.nameOrNone(self.mw.col.models.current()["did"])
                 or _("Default")

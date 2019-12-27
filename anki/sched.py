@@ -393,7 +393,7 @@ did = ? and queue = 0 limit ?)""",
             return self.col.getCard(self._newQueue.pop())
 
     def _updateNewCardRatio(self):
-        if self.col.conf["newSpread"] == NEW_CARDS_DISTRIBUTE:
+        if self.col.conf[COLLECTION_CONF_NEW_SPREAD] == NEW_CARDS_DISTRIBUTE:
             if self.newCount:
                 self.newCardModulus = (self.newCount + self.revCount) // self.newCount
                 # if there are cards to review, ensure modulo >= 2
@@ -406,9 +406,9 @@ did = ? and queue = 0 limit ?)""",
         "True if it's time to display a new card when distributing."
         if not self.newCount:
             return False
-        if self.col.conf["newSpread"] == NEW_CARDS_LAST:
+        if self.col.conf[COLLECTION_CONF_NEW_SPREAD] == NEW_CARDS_LAST:
             return False
-        elif self.col.conf["newSpread"] == NEW_CARDS_FIRST:
+        elif self.col.conf[COLLECTION_CONF_NEW_SPREAD] == NEW_CARDS_FIRST:
             return True
         elif self.newCardModulus:
             return self.reps and self.reps % self.newCardModulus == 0
@@ -508,7 +508,7 @@ limit %d"""
         if self._fillLrn():
             cutoff = time.time()
             if collapse:
-                cutoff += self.col.conf["collapseTime"]
+                cutoff += self.col.conf[COLLECTION_CONF_COLLAPSE_TIME]
             if self._lrnQueue[0][0] < cutoff:
                 id = heappop(self._lrnQueue)[1]
                 card = self.col.getCard(id)
@@ -753,7 +753,7 @@ where queue in (1,3) and type = 2
 select sum(left/1000) from
 (select left from cards where did = ? and queue = 1 and due < ? limit ?)""",
                 did,
-                intTime() + self.col.conf["collapseTime"],
+                intTime() + self.col.conf[COLLECTION_CONF_COLLAPSE_TIME],
                 self.reportLimit,
             )
             or 0
@@ -1336,7 +1336,7 @@ To study outside of the normal schedule, click the Custom Study button below."""
         if not ivl:
             return _("(end)")
         s = fmtTimeSpan(ivl, short=short)
-        if ivl < self.col.conf["collapseTime"]:
+        if ivl < self.col.conf[COLLECTION_CONF_COLLAPSE_TIME]:
             s = "<" + s
         return s
 

@@ -7,6 +7,10 @@ import sre_constants
 import unicodedata
 from typing import Any, List, Optional, Set, Tuple
 
+from anki.collection import (
+    COLLECTION_CONF_SORT_TYPE,
+    COLLECTION_CONF_SORT_BACKWARDS,
+)
 from anki.consts import *
 from anki.hooks import *
 from anki.utils import (
@@ -216,14 +220,14 @@ select distinct(n.id) from cards c, notes n where c.nid=n.id and """
     # Ordering
     ######################################################################
 
-    def _order(self, order) -> Tuple[Any, Any]:
+    def _order(self, order) -> Tuple[str, bool]:
         if not order:
             return "", False
         elif order is not True:
             # custom order string provided
             return " order by " + order, False
         # use deck default
-        type = self.col.conf["sortType"]
+        type = self.col.conf[COLLECTION_CONF_SORT_TYPE]
         sort = None
         if type.startswith("note"):
             if type == "noteCrt":
@@ -248,7 +252,7 @@ select distinct(n.id) from cards c, notes n where c.nid=n.id and """
         if not sort:
             # deck has invalid sort order; revert to noteCrt
             sort = "n.id, c.ord"
-        return " order by " + sort, self.col.conf["sortBackwards"]
+        return " order by " + sort, self.col.conf[COLLECTION_CONF_SORT_BACKWARDS]
 
     # Commands
     ######################################################################

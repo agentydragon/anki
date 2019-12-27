@@ -81,15 +81,15 @@ class Preferences(QDialog):
             f.hwAccel.setVisible(False)
         else:
             f.hwAccel.setChecked(self.mw.pm.glMode() != "software")
-        f.lrnCutoff.setValue(qc["collapseTime"] / 60.0)
+        f.lrnCutoff.setValue(qc[COLLECTION_CONF_COLLAPSE_TIME] / 60.0)
         f.timeLimit.setValue(qc["timeLim"] / 60.0)
-        f.showEstimates.setChecked(qc["estTimes"])
-        f.showProgress.setChecked(qc["dueCounts"])
+        f.showEstimates.setChecked(qc[COLLECTION_CONF_EST_TIMES])
+        f.showProgress.setChecked(qc[COLLECTION_CONF_DUE_COUNTS])
         f.nightMode.setChecked(qc.get("nightMode", False))
         f.newSpread.addItems(list(c.newCardSchedulingLabels().values()))
-        f.newSpread.setCurrentIndex(qc["newSpread"])
+        f.newSpread.setCurrentIndex(qc[COLLECTION_CONF_NEW_SPREAD])
         f.useCurrent.setCurrentIndex(int(not qc.get("addToCur", True)))
-        f.dayLearnFirst.setChecked(qc.get("dayLearnFirst", False))
+        f.dayLearnFirst.setChecked(qc.get(COLLECTION_DAY_LEARN_FIRST, False))
         if self.mw.col.schedVer() != 2:
             f.dayLearnFirst.setVisible(False)
         else:
@@ -110,14 +110,14 @@ class Preferences(QDialog):
                 showInfo(_("Changes will take effect when you restart Anki."))
 
         qc = d.conf
-        qc["dueCounts"] = f.showProgress.isChecked()
-        qc["estTimes"] = f.showEstimates.isChecked()
-        qc["newSpread"] = f.newSpread.currentIndex()
+        qc[COLLECTION_CONF_DUE_COUNTS] = f.showProgress.isChecked()
+        qc[COLLECTION_CONF_EST_TIMES] = f.showEstimates.isChecked()
+        qc[COLLECTION_CONF_NEW_SPREAD] = f.newSpread.currentIndex()
         qc["nightMode"] = f.nightMode.isChecked()
         qc["timeLim"] = f.timeLimit.value() * 60
-        qc["collapseTime"] = f.lrnCutoff.value() * 60
+        qc[COLLECTION_CONF_COLLAPSE_TIME] = f.lrnCutoff.value() * 60
         qc["addToCur"] = not f.useCurrent.currentIndex()
-        qc["dayLearnFirst"] = f.dayLearnFirst.isChecked()
+        qc[COLLECTION_CONF_DAY_LEARN_FIRST] = f.dayLearnFirst.isChecked()
         self._updateDayCutoff()
         self._updateSchedVer(f.newSched.isChecked())
         d.setMod()

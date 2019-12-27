@@ -82,7 +82,7 @@ class ModelChooser(QHBoxLayout):
         if not ret.name:
             return
         m = self.deck.models.byName(ret.name)
-        self.deck.conf["curModel"] = m["id"]
+        self.deck.conf[COLLECTION_CONF_CURRENT_MODEL] = m["id"]
         cdeck = self.deck.decks.current()
         cdeck["mid"] = m["id"]
         self.deck.decks.save(cdeck)

@@ -625,7 +625,7 @@ time = %(time)d;
         return buf + script
 
     def _buttonTime(self, i):
-        if not self.mw.col.conf["estTimes"]:
+        if not self.mw.col.conf[COLLECTION_CONF_EST_TIMES]:
             return "<div class=spacer></div>"
         txt = self.mw.col.sched.nextIvlStr(self.card, i, True) or "&nbsp;"
         return "<span class=nobold>%s</span><br>" % txt

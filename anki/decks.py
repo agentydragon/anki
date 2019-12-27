@@ -9,6 +9,10 @@ import unicodedata
 from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
 import anki  # pylint: disable=unused-import
+from anki.collection import (
+    COLLECTION_CONF_ACTIVE_DECKS,
+    COLLECTION_CONF_CURRENT_DECK
+)
 from anki.consts import *
 from anki.errors import DeckRenameError
 from anki.hooks import runHook
@@ -514,11 +518,11 @@ class DeckManager:
 
     def active(self) -> Any:
         "The currrently active dids. Make sure to copy before modifying."
-        return self.col.conf["activeDecks"]
+        return self.col.conf[COLLECTION_CONF_ACTIVE_DECKS]
 
     def selected(self) -> Any:
         "The currently selected did."
-        return self.col.conf["curDeck"]
+        return self.col.conf[COLLECTION_CONF_CURRENT_DECK]
 
     def current(self) -> Any:
         return self.get(self.selected())
@@ -528,11 +532,11 @@ class DeckManager:
         # make sure arg is an int
         did = int(did)
         # current deck
-        self.col.conf["curDeck"] = did
+        self.col.conf[COLLECTION_CONF_CURRENT_DECK] = did
         # and active decks (current + all children)
         actv = self.children(did)
         actv.sort()
-        self.col.conf["activeDecks"] = [did] + [a[1] for a in actv]
+        self.col.conf[COLLECTION_CONF_ACTIVE_DECKS] = [did] + [a[1] for a in actv]
         self.changed = True
 
     def children(self, did: int) -> List[Tuple[Any, Any]]:
