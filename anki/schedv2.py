@@ -1885,8 +1885,12 @@ where queue < 0"""
     # no 'manually buried' queue in v1
     def _moveManuallyBuried(self) -> None:
         self.col.db.execute(
+<<<<<<< HEAD
             f"update cards set queue={QUEUE_TYPE_SIBLING_BURIED},mod=%d where queue={QUEUE_TYPE_MANUALLY_BURIED}"
             % intTime()
+=======
+            f"update cards set queue=-2,mod=%d where queue={QUEUE_TYPE_MANUALLY_BURIED}" % intTime()
+>>>>>>> Add named constant for manually buried queue
         )
 
     # adding 'hard' in v2 scheduler means old ease entries need shifting
