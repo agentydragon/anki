@@ -632,28 +632,36 @@ where c.nid = n.id and c.id in %s group by nid"""
             raise Exception()
         return [self._renderQA(*row) for row in self._qaData(where)]
 
+    def _prepareFields(self, data: QAData, model: NoteType, template: Any) -> Dict[str, str]:
+        """Prepares fields for rendering the given QAData."""
+        # unpack fields and create dict
+        flist = splitFields(data[6])
+        fields = {
+            name: flist[idx]
+            for (name, (idx, _conf)) in self.models.fieldMap(model).items()
+        }
+        fields.update({
+            "Tags": data[5].strip(),
+            "Type": model["name"],
+            "Deck": self.decks.name(data[3]),
+            "Subdeck": fields["Deck"].split("::")[-1],
+            "CardFlag": self._flagNameFromCardFlags(data[7])
+            "Card": template["name"],
+            "c%d" % (data[4] + 1): "1"
+        })
+        return fields
+
     def _renderQA(self, data: QAData, qfmt: None = None, afmt: None = None) -> Dict:
         "Returns hash of id, question, answer."
         # data is [cid, nid, mid, did, ord, tags, flds, cardFlags]
-        # unpack fields and create dict
-        flist = splitFields(data[6])
-        fields = {}
         model = self.models.get(data[2])
         assert model
-        for (name, (idx, conf)) in list(self.models.fieldMap(model).items()):
-            fields[name] = flist[idx]
-        fields["Tags"] = data[5].strip()
-        fields["Type"] = model["name"]
-        fields["Deck"] = self.decks.name(data[3])
-        fields["Subdeck"] = fields["Deck"].split("::")[-1]
-        fields["CardFlag"] = self._flagNameFromCardFlags(data[7])
+        # render q & a
         if model["type"] == MODEL_STD:
             template = model["tmpls"][data[4]]
         else:
             template = model["tmpls"][0]
-        fields["Card"] = template["name"]
-        fields["c%d" % (data[4] + 1)] = "1"
-        # render q & a
+        fields = self._prepareFields(data, model, template)
         d: Dict[str, Any] = dict(id=data[0])
         qfmt = qfmt or template["qfmt"]
         afmt = afmt or template["afmt"]
