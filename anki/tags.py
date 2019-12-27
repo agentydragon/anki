@@ -201,6 +201,6 @@ class TagManager:
     ##########################################################################
 
     def beforeUpload(self) -> None:
-        for k in list(self.tags.keys()):
+        for k in self.tags:
             self.tags[k] = 0
         self.save()

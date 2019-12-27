@@ -563,7 +563,7 @@ class HttpSyncer:
         buf = io.BytesIO()
         # post vars
         self.postVars["c"] = "1" if comp else "0"
-        for (key, value) in list(self.postVars.items()):
+        for (key, value) in self.postVars.items():
             buf.write(bdry + b"\r\n")
             buf.write(
                 (

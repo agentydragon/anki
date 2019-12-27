@@ -139,7 +139,7 @@ insert or replace into notes values (?,?,?,?,?,?,?,?,?,?,?)""",
         self.fields[self._fieldOrd(key)] = value
 
     def __contains__(self, key) -> bool:
-        return key in list(self._fmap.keys())
+        return key in self._fmap
 
     # Tags
     ##################################################

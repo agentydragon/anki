@@ -466,7 +466,7 @@ crt=?, mod=?, scm=?, dty=?, usn=?, ls=?, conf=?""",
                     ts += 1
             # note any cards that need removing
             if nid in have:
-                for ord, id in list(have[nid].items()):
+                for ord, id in have[nid].items():
                     if ord not in avail:
                         rem.append(id)
         # bulk update
@@ -640,7 +640,7 @@ where c.nid = n.id and c.id in %s group by nid"""
         fields = {}
         model = self.models.get(data[2])
         assert model
-        for (name, (idx, conf)) in list(self.models.fieldMap(model).items()):
+        for (name, (idx, conf)) in self.models.fieldMap(model).items():
             fields[name] = flist[idx]
         fields["Tags"] = data[5].strip()
         fields["Type"] = model["name"]

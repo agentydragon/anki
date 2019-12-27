@@ -459,7 +459,7 @@ insert or ignore into revlog values (?,?,?,?,?,?,?,?,?)""",
     ######################################################################
 
     def _postImport(self) -> None:
-        for did in list(self._decks.values()):
+        for did in self._decks.values():
             self.col.sched.maybeRandomizeDeck(did)
         # make sure new position is correct
         self.dst.conf["nextPos"] = (

@@ -152,7 +152,7 @@ class ModelManager:
 
     def byName(self, name: str) -> Any:
         "Get model with NAME."
-        for m in list(self.models.values()):
+        for m in self.models.values():
             if m["name"] == name:
                 return m
 
@@ -487,7 +487,7 @@ select id from notes where mid = ?)"""
         ):
             newflds = {}
             flds = splitFields(flds)
-            for old, new in list(map.items()):
+            for old, new in map.items():
                 newflds[new] = flds[old]
             flds = []
             for c in range(nfields):

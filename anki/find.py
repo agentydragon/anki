@@ -464,7 +464,7 @@ select distinct(n.id) from cards c, notes n where c.nid=n.id and """
             """
 select id, mid, flds from notes
 where mid in %s and flds like ? escape '\\'"""
-            % (ids2str(list(mods.keys()))),
+            % (ids2str(mods.keys())),
             "%" + val + "%",
         ):
             flds = splitFields(flds)

@@ -109,7 +109,7 @@ class DeckManager:
         self.dconf = json.loads(dconf)
         # set limits to within bounds
         found = False
-        for c in list(self.dconf.values()):
+        for c in self.dconf.values():
             for t in ("rev", "new"):
                 pd = "perDay"
                 if c[t][pd] > 999999:
@@ -264,7 +264,7 @@ class DeckManager:
 
     def byName(self, name: str) -> Any:
         """Get deck with NAME, ignoring case."""
-        for m in list(self.decks.values()):
+        for m in self.decks.values():
             if self.equalName(m["name"], name):
                 return m
 
@@ -417,7 +417,7 @@ class DeckManager:
 
     def didsForConf(self, conf) -> List:
         dids = []
-        for deck in list(self.decks.values()):
+        for deck in self.decks.values():
             if "conf" in deck and deck["conf"] == conf["id"]:
                 dids.append(deck["id"])
         return dids

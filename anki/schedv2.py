@@ -284,7 +284,6 @@ order by due"""
             return grp[0][0]
 
         for (head, tail) in itertools.groupby(grps, key=key):
-            tail = list(tail)  # type: ignore
             did = None
             rev = 0
             new = 0
