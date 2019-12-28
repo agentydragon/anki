@@ -157,7 +157,8 @@ order by due"""
         ret = [x[1] for x in sorted(daysd.items())]
         return ret
 
-    def countIdx(self, card: Card) -> Any:
+    @classmethod
+    def countIdx(cls, card: Card) -> Any:
         if card.queue in (3, 4):
             return 1
         return card.queue
@@ -631,7 +632,8 @@ did = ? and queue = 3 and due <= ? limit ?""",
 
         self._logLrn(card, ease, conf, leaving, type, lastLeft)
 
-    def _updateRevIvlOnFail(self, card: Card, conf: Dict[str, Any]) -> None:
+    @classmethod
+    def _updateRevIvlOnFail(cls, card: Card, conf: Dict[str, Any]) -> None:
         card.lastIvl = card.ivl
         card.ivl = self._lapseIvl(card, conf)
 
@@ -687,7 +689,8 @@ did = ? and queue = 3 and due <= ? limit ?""",
             card.queue = 3
         return delay
 
-    def _delayForGrade(self, conf: Dict[str, Any], left: int) -> Any:
+    @classmethod
+    def _delayForGrade(cls, conf: Dict[str, Any], left: int) -> Any:
         left = left % 1000
         try:
             delay = conf["delays"][-left]
@@ -699,11 +702,12 @@ did = ? and queue = 3 and due <= ? limit ?""",
                 delay = 1
         return delay * 60
 
-    def _delayForRepeatingGrade(self, conf: Dict[str, Any], left: int) -> Any:
+    @classmethod
+    def _delayForRepeatingGrade(cls, conf: Dict[str, Any], left: int) -> Any:
         # halfway between last and next
-        delay1 = self._delayForGrade(conf, left)
+        delay1 = cls._delayForGrade(conf, left)
         if len(conf["delays"]) > 1:
-            delay2 = self._delayForGrade(conf, left - 1)
+            delay2 = cls._delayForGrade(conf, left - 1)
         else:
             delay2 = delay1 * 2
         avg = (delay1 + max(delay1, delay2)) // 2
@@ -761,8 +765,9 @@ did = ? and queue = 3 and due <= ? limit ?""",
             ok = i
         return ok + 1
 
+    @classmethod
     def _graduatingIvl(
-        self, card: Card, conf: Dict[str, Any], early: bool, fuzz: bool = True
+        cls, card: Card, conf: Dict[str, Any], early: bool, fuzz: bool = True
     ) -> Any:
         if card.type in (2, CARD_TYPE_RELEARNING):
             bonus = early and 1 or 0
@@ -981,7 +986,8 @@ select id from cards where did in %s and queue = 2 and due <= ? limit ?)"""
 
         return delay
 
-    def _lapseIvl(self, card: Card, conf: Dict[str, Any]) -> Any:
+    @classmethod
+    def _lapseIvl(cls, card: Card, conf: Dict[str, Any]) -> Any:
         ivl = max(1, conf["minInt"], int(card.ivl * conf["mult"]))
         return ivl
 
@@ -1048,11 +1054,13 @@ select id from cards where did in %s and queue = 2 and due <= ? limit ?)"""
         )
         return ivl4
 
-    def _fuzzedIvl(self, ivl: int) -> int:
-        min, max = self._fuzzIvlRange(ivl)
+    @classmethod
+    def _fuzzedIvl(cls, ivl: int) -> int:
+        min, max = cls._fuzzIvlRange(ivl)
         return random.randint(min, max)
 
-    def _fuzzIvlRange(self, ivl: int) -> List:
+    @classmethod
+    def _fuzzIvlRange(cls, ivl: int) -> List:
         if ivl < 2:
             return [1, 1]
         elif ivl == 2:
@@ -1067,17 +1075,19 @@ select id from cards where did in %s and queue = 2 and due <= ? limit ?)"""
         fuzz = max(fuzz, 1)
         return [ivl - fuzz, ivl + fuzz]
 
+    @classmethod
     def _constrainedIvl(
-        self, ivl: Union[int, float], conf: Dict[str, Any], prev: int, fuzz: bool
+        cls, ivl: Union[int, float], conf: Dict[str, Any], prev: int, fuzz: bool
     ) -> int:
         ivl = int(ivl * conf.get("ivlFct", 1))
         if fuzz:
-            ivl = self._fuzzedIvl(ivl)
+            ivl = cls._fuzzedIvl(ivl)
         ivl = max(ivl, prev + 1, 1)
         ivl = min(ivl, conf["maxIvl"])
         return int(ivl)
 
-    def _daysLate(self, card: Card) -> Any:
+    @classmethod
+    def _daysLate(cls, card: Card) -> Any:
         "Number of days later than scheduled."
         due = card.odue if card.odid else card.due
         return max(0, self.today - due)
@@ -1226,13 +1236,15 @@ where id = ?
         )
         self.col.db.executemany(query, data)
 
-    def _removeFromFiltered(self, card: Card) -> None:
+    @classmethod
+    def _removeFromFiltered(cls, card: Card) -> None:
         if card.odid:
             card.did = card.odid
             card.odue = 0
             card.odid = 0
 
-    def _restorePreviewCard(self, card: Card) -> None:
+    @classmethod
+    def _restorePreviewCard(cls, card: Card) -> None:
         assert card.odid
 
         card.due = card.odue
@@ -1250,7 +1262,8 @@ where id = ?
     # Leeches
     ##########################################################################
 
-    def _checkLeech(self, card: Card, conf: Dict[str, Any]) -> Optional[bool]:
+    @classmethod
+    def _checkLeech(cls, card: Card, conf: Dict[str, Any]) -> Optional[bool]:
         "Leech handler. True if card was a leech."
         lf = conf["leechFails"]
         if not lf:
