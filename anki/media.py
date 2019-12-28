@@ -304,6 +304,8 @@ create table meta (dirMod int, lastUsn int); insert into meta values (0, 0);
                     noteRefs = self.filesInStr(mid, flds)
                     break
             allRefs.update(noteRefs)
+        # TODO(prvak): what about media referenced in models?
+
         # loop through media folder
         unused = []
         if local is None:
