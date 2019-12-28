@@ -1172,7 +1172,7 @@ by clicking on one on the left."""
                     txt += a + ":"
                 else:
                     txt += a
-                    for chr in " 　()":
+                    for chr in " \t()":
                         if chr in txt:
                             txt = '"%s"' % txt
                             break
