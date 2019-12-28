@@ -231,29 +231,14 @@ create table meta (dirMod int, lastUsn int); insert into meta values (0, 0);
                         l.append(fname)
         return l
 
+    # TODO: reuse _availClozeOrds in models.py
     def _expandClozes(self, string: str) -> List[str]:
         ords = set(re.findall(r"{{c(\d+)::.+?}}", string))
+        from anki.template.template import Template
         strings = []
-        from anki.template.template import (
-            clozeReg,
-            CLOZE_REGEX_MATCH_GROUP_HINT,
-            CLOZE_REGEX_MATCH_GROUP_CONTENT,
-        )
-
-        def qrepl(m):
-            if m.group(CLOZE_REGEX_MATCH_GROUP_HINT):
-                return "[%s]" % m.group(CLOZE_REGEX_MATCH_GROUP_HINT)
-            else:
-                return "[...]"
-
-        def arepl(m):
-            return m.group(CLOZE_REGEX_MATCH_GROUP_CONTENT)
-
         for ord in ords:
-            s = re.sub(clozeReg % ord, qrepl, string)
-            s = re.sub(clozeReg % ".+?", arepl, s)
-            strings.append(s)
-        strings.append(re.sub(clozeReg % ".+?", arepl, string))
+            for side in ['q', 'a']:
+                strings.append(Template.clozeText(string, ord, side))
         return strings
 
     def transformNames(self, txt: str, func: Callable) -> Any:

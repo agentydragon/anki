@@ -651,6 +651,7 @@ select id from notes where mid = ?)"""
             avail.append(ord)
         return avail
 
+    # TODO: reuse in _expandClozes in media.py
     def _availClozeOrds(self, m: NoteType, flds: str, allowEmpty: bool = True) -> List:
         sflds = splitFields(flds)
         map = self.fieldMap(m)
