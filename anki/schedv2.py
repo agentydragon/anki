@@ -753,13 +753,11 @@ did = ? and queue = 3 and due <= ? limit ?""",
         if not now:
             now = intTime()
         delays = delays[-left:]
-        ok = 0
-        for i in range(len(delays)):
-            now += int(delays[i] * 60)
+        for i, delay in enumerate(delays):
+            now += int(delay * 60)
             if now > self.dayCutoff:
-                break
-            ok = i
-        return ok + 1
+                return i + 1
+        return len(delays)
 
     def _graduatingIvl(
         self, card: Card, conf: Dict[str, Any], early: bool, fuzz: bool = True
